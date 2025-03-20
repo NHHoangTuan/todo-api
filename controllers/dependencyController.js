@@ -2,7 +2,6 @@ const Task = require("../models/taskModel");
 const {
   checkForCircularDependency,
 } = require("../utils/circularDependencyCheck");
-const { clearTaskCache } = require("../utils/caching");
 
 // Add dependency
 exports.addDependency = async (req, res) => {
@@ -45,9 +44,6 @@ exports.addDependency = async (req, res) => {
     task.dependencies.push(dependencyId);
     await task.save();
 
-    // Clear cache
-    clearTaskCache();
-
     res.status(200).json({
       success: true,
       data: task,
@@ -88,9 +84,6 @@ exports.removeDependency = async (req, res) => {
     );
 
     await task.save();
-
-    // Clear cache
-    clearTaskCache();
 
     res.status(200).json({
       success: true,

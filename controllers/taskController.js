@@ -1,9 +1,4 @@
 const Task = require("../models/taskModel");
-const {
-  getCachedTasks,
-  setCachedTasks,
-  clearTaskCache,
-} = require("../utils/caching");
 
 // Create a new task
 exports.createTask = async (req, res) => {
@@ -16,9 +11,6 @@ exports.createTask = async (req, res) => {
       dueDate,
       priority,
     });
-
-    // Clear cache when new data is added
-    clearTaskCache();
 
     res.status(201).json({
       success: true,
@@ -39,19 +31,6 @@ exports.getTasks = async (req, res) => {
     const queryObj = { ...req.query };
     const excludedFields = ["page", "sort", "limit", "fields"];
     excludedFields.forEach((field) => delete queryObj[field]);
-
-    // Check cache first
-    const cacheKey = JSON.stringify(queryObj);
-    const cachedData = getCachedTasks(cacheKey);
-
-    if (cachedData) {
-      return res.status(200).json({
-        success: true,
-        count: cachedData.length,
-        data: cachedData,
-        fromCache: true,
-      });
-    }
 
     // Filtering
     let query = Task.find(queryObj);
@@ -74,7 +53,7 @@ exports.getTasks = async (req, res) => {
 
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    const limit = parseInt(req.query.limit, 10) || 2;
     const skip = (page - 1) * limit;
 
     query = query.skip(skip).limit(limit);
@@ -82,12 +61,14 @@ exports.getTasks = async (req, res) => {
     // Execute query
     const tasks = await query;
 
-    // Store in cache
-    setCachedTasks(cacheKey, tasks);
-
     res.status(200).json({
       success: true,
       count: tasks.length,
+      pagination: {
+        currentPage: page,
+        limit,
+        totalTasks: await Task.countDocuments(),
+      },
       data: tasks,
     });
   } catch (error) {
@@ -137,9 +118,6 @@ exports.updateTask = async (req, res) => {
       });
     }
 
-    // Clear cache
-    clearTaskCache();
-
     res.status(200).json({
       success: true,
       data: task,
@@ -179,9 +157,6 @@ exports.deleteTask = async (req, res) => {
     }
 
     await task.remove();
-
-    // Clear cache
-    clearTaskCache();
 
     res.status(200).json({
       success: true,
