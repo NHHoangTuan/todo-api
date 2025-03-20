@@ -53,7 +53,7 @@ exports.getTasks = async (req, res) => {
 
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 2;
+    const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
 
     query = query.skip(skip).limit(limit);
@@ -106,10 +106,7 @@ exports.getTask = async (req, res) => {
 // Update task
 exports.updateTask = async (req, res) => {
   try {
-    const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const task = await Task.findById(req.params.id);
 
     if (!task) {
       return res.status(404).json({
@@ -118,9 +115,39 @@ exports.updateTask = async (req, res) => {
       });
     }
 
+    // Check status of dependent tasks
+    if (req.body.status === "in-progress" || req.body.status === "completed") {
+      const dependencies = await Task.find({
+        _id: { $in: task.dependencies },
+      });
+
+      const incompleteDependencies = dependencies.filter(
+        (dep) => dep.status !== "completed"
+      );
+
+      if (incompleteDependencies.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error:
+            "Cannot mark task as completed - it has incomplete dependencies",
+          incompleteDependencies: incompleteDependencies.map((dep) => ({
+            id: dep._id,
+            title: dep.title,
+            status: dep.status,
+          })),
+        });
+      }
+    }
+
+    // Update task
+    const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
     res.status(200).json({
       success: true,
-      data: task,
+      data: updatedTask,
     });
   } catch (error) {
     res.status(400).json({
@@ -156,11 +183,11 @@ exports.deleteTask = async (req, res) => {
       });
     }
 
-    await task.remove();
+    await Task.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       success: true,
-      data: {},
+      message: "Task deleted successfully",
     });
   } catch (error) {
     res.status(400).json({
