@@ -8,7 +8,7 @@ const {
 
 /**
  * @swagger
- * /api/dependencies/tasks/{taskId}/dependencies/{dependencyId}:
+ * /api/dependencies/{taskId}:
  *   post:
  *     summary: Add a dependency to a task
  *     description: Makes a task depend on another task
@@ -20,12 +20,18 @@ const {
  *         schema:
  *           type: string
  *         description: ID of the task that will depend on another task
- *       - in: path
- *         name: dependencyId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the task that will be a dependency
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - dependencyId
+ *             properties:
+ *               dependencyId:
+ *                 type: string
+ *                 description: ID of the task that will be a dependency
  *     responses:
  *       200:
  *         description: Dependency added successfully
@@ -39,28 +45,16 @@ const {
  *                   example: true
  *                 data:
  *                   type: object
- *                   properties:
- *                     _id:
- *                       type: string
- *                       example: 60d21b4667d0d8992e610c85
- *                     title:
- *                       type: string
- *                       example: "Complete project report"
- *                     dependencies:
- *                       type: array
- *                       items:
- *                         type: string
- *                       example: ["60d21b4667d0d8992e610c86"]
  *       400:
  *         description: Bad request - dependency already exists or would create a circular reference
  *       404:
  *         description: Task or dependency not found
  */
-router.post("/tasks/:taskId/dependencies/:dependencyId", addDependency);
+router.post("/:taskId", addDependency);
 
 /**
  * @swagger
- * /api/dependencies/tasks/{taskId}/dependencies/{dependencyId}:
+ * /api/dependencies/{taskId}/dependency/{dependencyId}:
  *   delete:
  *     summary: Remove a dependency from a task
  *     description: Removes the dependency relationship between two tasks
@@ -78,6 +72,18 @@ router.post("/tasks/:taskId/dependencies/:dependencyId", addDependency);
  *         schema:
  *           type: string
  *         description: ID of the dependency task to remove
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - dependencyId
+ *             properties:
+ *               dependencyId:
+ *                 type: string
+ *                 description: ID of the task that will be a dependency
  *     responses:
  *       200:
  *         description: Dependency removed successfully
@@ -105,11 +111,11 @@ router.post("/tasks/:taskId/dependencies/:dependencyId", addDependency);
  *       404:
  *         description: Task not found
  */
-router.delete("/tasks/:taskId/dependencies/:dependencyId", removeDependency);
+router.delete("/:taskId/dependency/:dependencyId", removeDependency);
 
 /**
  * @swagger
- * /api/dependencies/tasks/{taskId}/dependencies:
+ * /api/dependencies/{taskId}:
  *   get:
  *     summary: Get all dependencies for a task
  *     description: Retrieves both direct and indirect (transitive) dependencies for a task
@@ -167,6 +173,6 @@ router.delete("/tasks/:taskId/dependencies/:dependencyId", removeDependency);
  *       404:
  *         description: Task not found
  */
-router.get("/tasks/:taskId/dependencies", getAllDependencies);
+router.get("/:taskId", getAllDependencies);
 
 module.exports = router;

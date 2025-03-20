@@ -6,7 +6,8 @@ const {
 // Add dependency
 exports.addDependency = async (req, res) => {
   try {
-    const { taskId, dependencyId } = req.params;
+    const { taskId } = req.params;
+    const { dependencyId } = req.body;
 
     // Check if both tasks exist
     const task = await Task.findById(taskId);
@@ -15,7 +16,14 @@ exports.addDependency = async (req, res) => {
     if (!task || !dependencyTask) {
       return res.status(404).json({
         success: false,
-        error: "Task or dependency not found",
+        error: "Task or dependency task not found",
+      });
+    }
+
+    if (!dependencyId) {
+      return res.status(400).json({
+        success: false,
+        error: "dependencyId is required in request body",
       });
     }
 
