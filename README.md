@@ -10,11 +10,6 @@ A RESTful API for managing tasks with dependencies, built with Node.js, Express,
 - Caching for improved performance
 - Filtering and pagination
 
-## Prerequisites
-
-- Node.js (v14+)
-- MongoDB
-
 ## Installation
 
 1. Clone the repository:
@@ -57,24 +52,14 @@ npm start
 To run the application using Docker:
 
 ```bash
-docker-compose up
+docker-compose up -d
 ```
 
-## API Endpoints
+## API Documentation
 
-### Tasks
+After starting the application, access the Swagger UI to view full API documentation:
 
-- `GET /api/tasks` - Get all tasks (with filtering and pagination)
-- `POST /api/tasks` - Create a new task
-- `GET /api/tasks/:id` - Get a specific task
-- `PUT /api/tasks/:id` - Update a task
-- `DELETE /api/tasks/:id` - Delete a task
-
-### Dependencies
-
-- `POST /api/dependencies/tasks/:taskId/dependencies/:dependencyId` - Add a dependency
-- `DELETE /api/dependencies/tasks/:taskId/dependencies/:dependencyId` - Remove a dependency
-- `GET /api/dependencies/tasks/:taskId/dependencies` - Get all dependencies (direct and indirect)
+http://localhost:3000/api-docs
 
 ## API Examples
 
